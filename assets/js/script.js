@@ -1,51 +1,115 @@
-/*
-1. Al via il computer genera 5 numeri
-2. Vengono mostrati per 5 secondi i numeri generati
-3. L'utente deve indovinare i 5 numeri
-4. Quindi c'è un'attesa di 5 secondi perchè il computer mostra calcolo in corso
-5. Vengono mostrati i numeri indovinati
- */
+  var arrRandom, arrUser, arrResult;
+  var limit = 5;
+  var secAttesa = 2;
 
-$(document).ready(function(){
-  reset();
-  // array dei numeri ramdom generati dal computer
-  var arrRandom = [];
-  var arrNumber = [];
-  var arrResult = [];
+  $(function(){
 
-  $('#btn-start').click(function(){
-    $(this).hide();
-    while(arrRandom.length < 5){
-      arrRandom.push(generatorRandomNumber(1,100));
-    }
-    console.log(arrRandom)
+    // inizializzo l'app
+    reset();
 
-    printOutput(arrRandom.toString(),'#display')
+    // 1 inizio a giocare
+    $('#start').click(function(){
+      //faccio generare l'arrRandom
+      while(arrRandom.length < limit){
+        var nr = getNumberGenerator(1,100);
+        // se il numero non è presento lo inserisco nell'array
+        if(!arrRandom.includes(nr)) arrRandom.push(nr);
+      }
 
-    setTimeout(function(){
-      printOutput('Indovina i 5 numeri', '#display');
-      $('#btn-box').show();
-    }, 5000);
+      // visualizzo il gioco da fare e tolgo il bottone start
+      printDisplay('I numeri estratti sono: '+arrRandom.join(' - '));
+      $('#start').hide();
+
+      //termino la visulaizzazione dopo i secondi e iniza il gioco
+      setTimeout(function(){
+        printDisplay('Inserisci '+ limit + ' numeri.');
+        $('#console').show();
+      }, secAttesa * 1000);
+    });
+
+    // 2 inserisco i numeri
+    $('#send-number').click(function(){
+
+      // se non ho ancora inserito tutti i numeri vado avanti
+      if(arrUser.length < limit) {
+        // impedisco i numeri doppi e ti avverto
+        if(arrUser.includes($('input').val())) {
+          printDisplay('Attenzione numero già inserito');
+        }else{
+          // inserimento corretto con output
+          arrUser.push($('input').val());
+          printDisplay('Numeri inseriti: '+arrUser.join(' - '));
+        }
+      }
+      if(arrUser.length  === limit){
+        // verifico il  punteggio
+          for(var num of arrUser){
+            
+            //console.log(typeof(num)) // controllo il tipo 
+            if(arrRandom.includes(parseInt(num))){
+              arrResult.push(num);
+            }
+            
+          }
+          console.log(arrResult);
+        // quando ho inserito tutti i numeri aspetto un secondo e mostro attesa...
+        
+        // per mostrare anche l'ultimo numero inserto aspetto mezzo secondo a scrive Calcolo in corso..
+        setTimeout(function(){
+
+          printDisplay('Calcolo in corso...');
+          $('#console').hide();
+
+        }, 500);
+
+        // dopo 2 secondi da calcolo in corso mostro il risultato
+        setTimeout(function(){
+
+          if(arrResult.length === 0){
+            printDisplay('Hai perso!')
+          }else if(arrResult.length === limit){
+            printDisplay('Hai vinto');
+          }else{
+            printDisplay('Hai indovinato questi numeri: '+arrResult.join(' - '));
+          }
+          $('#restart').show();
+          
+        }, 2500);
+        
+      }
+      $('input').val('');
+      $('input').focus();
+      
+
+    });
+
+    // cliccando su reset inizializzo l'app
+    $('#restart').click(function(){
+      reset();
+    });
 
   });
-  
-  $('#btn').click(function(){
-    $('#input').push(arrNumber.length);
-    console.log(arrNumber)
-  })
 
-})
-//FUNZIONI
-function reset(){
-  printOutput('Pronto.. Clicca VIA!', '#display');
-  $('#btn-start').show();
-  $('#btn-box').hide();
-}
+  // creao una funzione di reset per poter gestire sempre il punto di partenza
+  // azzero tutti i dati e visualizzo la situazione di inizio
+  function reset(){
+    limit = parseInt(prompt('Scegli quanti numeri inserire'));
+    arrRandom = [];
+    arrUser = [];
+    arrResult = [];
+    printDisplay('Per iniziare a giocare clicca su VIA');
+    $('#display').show();
+    $('#start').show();
+    $('#restart').hide();
+    $('#console').hide();
+  }
 
-function printOutput (text, target){
-  $(target).text(text);
-}
+  // stampa un testo nel display
+  function printDisplay(text){
+    $('#display').text(text);
+  }
 
-function generatorRandomNumber(min, max){
- return Math.floor(Math.random()*(max - min + 1)+min);
-}
+  //generatore di numeri random
+  function getNumberGenerator(min,max){
+    return Math.floor(Math.random() * (max - min) + 1) + min;
+  }
